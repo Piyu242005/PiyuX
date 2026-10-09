@@ -50,7 +50,7 @@ auth.post("/auth/setup", (req, res) => {
   const username = String(req.body?.username || "admin").trim().toLowerCase();
   const password = String(req.body?.password || "");
   if (!/^[a-z0-9_.-]{3,32}$/i.test(username)) return res.status(400).json({ error: "Username must be 3-32 chars (letters, numbers, _ . -)" });
-  if (password.length < 4) return res.status(400).json({ error: "Password must be at least 4 characters" });
+  if (password.length < 12) return res.status(400).json({ error: "Password must be at least 12 characters" });
   const id = uid();
   try {
     stmt.addUser.run({ id, username, password_hash: hashPassword(password), role: "admin", created_at: Date.now() });
@@ -62,19 +62,35 @@ auth.post("/auth/setup", (req, res) => {
 });
 
 const loginAttempts = new Map();
+const LOGIN_WINDOW_MS = 15 * 60 * 1000;
+const LOGIN_MAX_ATTEMPTS = 5;
+const LOGIN_MAX_KEYS = 10_000;
+
+function consumeLoginAttempt(ip, now) {
+  let entry = loginAttempts.get(ip);
+  if (!entry || now - entry.windowStart >= LOGIN_WINDOW_MS) {
+    entry = { count: 0, windowStart: now };
+    loginAttempts.set(ip, entry);
+  }
+  if (entry.count >= LOGIN_MAX_ATTEMPTS) {
+    return Math.max(1, Math.ceil((LOGIN_WINDOW_MS - (now - entry.windowStart)) / 1000));
+  }
+  entry.count += 1;
+  if (loginAttempts.size > LOGIN_MAX_KEYS) {
+    for (const [key, value] of loginAttempts) {
+      if (now - value.windowStart >= LOGIN_WINDOW_MS) loginAttempts.delete(key);
+      if (loginAttempts.size <= LOGIN_MAX_KEYS) break;
+    }
+  }
+  return 0;
+}
 
 auth.post("/auth/login", (req, res) => {
-  const ip = req.ip || req.connection.remoteAddress;
+  const ip = String(req.ip || req.socket?.remoteAddress || "unknown");
   const now = Date.now();
-  const attempt = loginAttempts.get(ip) || { count: 0, time: now };
-  
-  // Reset after 5 minutes
-  if (now - attempt.time > 5 * 60 * 1000) {
-    attempt.count = 0;
-    attempt.time = now;
-  }
-  
-  if (attempt.count > 5) {
+  const retryAfter = consumeLoginAttempt(ip, now);
+  if (retryAfter) {
+    res.setHeader("Retry-After", String(retryAfter));
     return res.status(429).json({ error: "Too many login attempts. Please try again later." });
   }
 
@@ -82,19 +98,17 @@ auth.post("/auth/login", (req, res) => {
   const password = String(req.body?.password || "");
   const remember = req.body?.remember !== false && req.body?.remember !== "false";
   const user = stmt.getUserByUsername.get(username);
-  
+
   if (!user || !verifyPassword(password, user.password_hash)) {
-    attempt.count++;
-    attempt.time = now;
-    loginAttempts.set(ip, attempt);
     return res.status(401).json({ error: "Wrong username or password" });
   }
-  
-  loginAttempts.delete(ip);
+
+  // Rotate an existing session ID on authentication to reduce fixation risk.
+  destroySession(req, res);
   createSession(req, res, { id: user.id, username: user.username, role: user.role }, { remember });
+  loginAttempts.delete(ip);
   res.json({ ok: true });
 });
-
 auth.post("/auth/logout", (req, res) => {
   destroySession(req, res);
   res.json({ ok: true });
@@ -105,9 +119,11 @@ auth.post("/auth/password", requireAppAuth, (req, res) => {
   const next = String(req.body?.next || "");
   const user = stmt.getUserById.get(req.user.id);
   if (!user || !verifyPassword(cur, user.password_hash)) return res.status(401).json({ error: "Current password is wrong" });
-  if (next.length < 4) return res.status(400).json({ error: "New password must be at least 4 characters" });
+  if (next.length < 12) return res.status(400).json({ error: "New password must be at least 12 characters" });
   stmt.updateUser.run({ id: user.id, password_hash: hashPassword(next), role: user.role });
-  res.json({ ok: true });
+  destroyUserSessions(user.id);
+  destroySession(req, res);
+  res.json({ ok: true, reauthenticate: true });
 });
 
 /* -------- Users (admin only) -------- */
@@ -121,7 +137,7 @@ auth.post("/users", requireAppAuth, requireAdmin, (req, res) => {
   const password = String(req.body?.password || "");
   const role = req.body?.role === "admin" ? "admin" : "user";
   if (!/^[a-z0-9_.-]{3,32}$/i.test(username)) return res.status(400).json({ error: "Username must be 3-32 chars (letters, numbers, _ . -)" });
-  if (password.length < 4) return res.status(400).json({ error: "Password must be at least 4 characters" });
+  if (password.length < 12) return res.status(400).json({ error: "Password must be at least 12 characters" });
   const id = uid();
   try {
     stmt.addUser.run({ id, username, password_hash: hashPassword(password), role, created_at: Date.now() });
@@ -141,8 +157,10 @@ auth.patch("/users/:id", requireAppAuth, requireAdmin, (req, res) => {
     if (admins <= 1) return res.status(400).json({ error: "Cannot demote the last admin" });
   }
   const next = String(req.body?.password || "");
-  const password_hash = next.length >= 4 ? hashPassword(next) : user.password_hash;
+  if (next && next.length < 12) return res.status(400).json({ error: "Password must be at least 12 characters" });
+  const password_hash = next ? hashPassword(next) : user.password_hash;
   stmt.updateUser.run({ id: user.id, password_hash, role });
+  if (next) destroyUserSessions(user.id);
   res.json({ ok: true });
 });
 
@@ -211,7 +229,7 @@ auth.get("/accounts", requireAppAuth, (req, res) => {
   res.json({ accounts: stmt.listAccounts.all().map(publicAccount) });
 });
 
-auth.post("/accounts/switch/:id", requireAppAuth, (req, res) => {
+auth.post("/accounts/switch/:id", requireAppAuth, requireAdmin, (req, res) => {
   const acc = stmt.getAccount.get(req.params.id);
   if (!acc) return res.status(404).json({ error: "Account not found" });
   updateSession(req, { currentAccountId: req.params.id });
