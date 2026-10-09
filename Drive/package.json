@@ -1,0 +1,47 @@
+{
+  "name": "tgdrive-web",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Self-hosted, brandable cloud drive that uses Telegram as infinite free storage. Multi-user, public share links, streaming, REST API.",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "telegram",
+    "cloud-storage",
+    "self-hosted",
+    "drive",
+    "gramjs",
+    "file-sharing",
+    "telegram-api",
+    "unlimited-storage",
+    "express",
+    "brandable"
+  ],
+  "license": "MIT",
+  "author": "Samer Ahmed",
+  "homepage": "https://github.com/Sam8r/TGWebDrive",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sam8r/TGWebDrive.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Sam8r/TGWebDrive/issues"
+  },
+  "dependencies": {
+    "archiver": "^7.0.1",
+    "better-sqlite3": "^11.9.1",
+    "compression": "^1.7.5",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "mime-types": "^2.1.35",
+    "sharp": "^0.35.3",
+    "telegram": "^2.26.0"
+  }
+}

@@ -1,0 +1,14 @@
+node_modules/
+.env
+data/
+*.log
+.DS_Store
+
+# opencode / agents
+.opencode/
+AGENTS.md
+
+# speckit
+.speckit/
+speckit.json
+speckit.config.*
