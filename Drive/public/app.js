@@ -1757,7 +1757,6 @@ function viewSettings() {
             <div class="brand-logo-pick">
               <div class="brand-logo-box" id="brandLogoBox">${brandLogoPreview}</div>
               <div class="brand-logo-btns">
-                <label class="btn-2">${icon("upload", { size: 14 })} Upload<input type="file" id="logoFile" accept="image/*" hidden /></label>
                         <span class="hint" id="logoMsg">PNG / SVG / WebP, up to 2 MB.</span>
               </div>
             </div>
@@ -1847,29 +1846,7 @@ function wireBranding() {
       save.disabled = false;
     }
   };
-  const fileInput = $("#logoFile");
-  if (fileInput) {
-    fileInput.onchange = async () => {
-      const f = fileInput.files?.[0];
-      if (!f) return;
-      const msg = $("#logoMsg");
-      if (f.size > 2 * 1024 * 1024) return (msg.textContent = "Too large (max 2 MB).");
-      msg.textContent = "Uploading…";
-      try {
-        const buf = await f.arrayBuffer();
-        const r = await api("/api/branding/logo", { method: "POST", headers: { "Content-Type": f.type }, body: buf });
-        brand.logo = r.logo;
-        $("#brandLogoBox").innerHTML = brandMark(40);
-        msg.textContent = "Logo updated.";
-        viewSettings();
-      } catch (e) {
-        msg.textContent = e.message;
-      }
-    };
-  }
 
-}
-window.switchAcc = async (id) => {
   await api("/api/accounts/switch/" + id, { method: "POST" });
   state.currentAccountId = id;
   state.currentFolder = null;
