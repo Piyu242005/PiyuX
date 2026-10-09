@@ -121,7 +121,7 @@ auth.post("/users", requireAppAuth, requireAdmin, (req, res) => {
   const password = String(req.body?.password || "");
   const role = req.body?.role === "admin" ? "admin" : "user";
   if (!/^[a-z0-9_.-]{3,32}$/i.test(username)) return res.status(400).json({ error: "Username must be 3-32 chars (letters, numbers, _ . -)" });
-  if (password.length < 12) return res.status(400).json({ error: "Password must be at least 12 characters" });
+  if (!validatePassword(password)) return res.status(400).json({ error: "Password must be at least 12 characters" });
   const id = uid();
   try {
     stmt.addUser.run({ id, username, password_hash: hashPassword(password), role, created_at: Date.now() });
