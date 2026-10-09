@@ -6,7 +6,7 @@
     <a href="https://github.com/Piyu242005/PiyuX"><img src="https://img.shields.io/github/stars/Piyu242005/PiyuX?style=for-the-badge&color=007ec6" alt="Stars" /></a>
     <a href="https://github.com/Piyu242005/PiyuX"><img src="https://img.shields.io/github/forks/Piyu242005/PiyuX?style=for-the-badge&color=007ec6" alt="Forks" /></a>
     <a href="https://github.com/Piyu242005/PiyuX"><img src="https://img.shields.io/github/license/Piyu242005/PiyuX?style=for-the-badge&color=007ec6" alt="License" /></a>
-    <img src="https://img.shields.io/badge/Node.js-%3E%3D20-green?style=for-the-badge&logo=nodedotjs" alt="Node" />
+    <img src="https://img.shields.io/badge/Node.js-22.x-green?style=for-the-badge&logo=nodedotjs" alt="Node" />
   </p>
 </div>
 
@@ -44,7 +44,7 @@ The application source is in the `Drive/` directory.
 ## 🚀 Getting Started (Local Development)
 
 ### 1. Prerequisites
-- [Node.js](https://nodejs.org) (v20 or higher recommended)
+- [Node.js](https://nodejs.org) (Node.js 22 LTS)
 - A Telegram Account
 - Your Telegram `API_ID` and `API_HASH` (Get it from [my.telegram.org](https://my.telegram.org))
 
@@ -82,15 +82,15 @@ This repository includes a `render.yaml` Blueprint for deployment.
 
 ### Render configuration
 
-The Blueprint sets:
+The Blueprint is configured for the **Free** instance type:
 - **Root directory:** `Drive`
 - **Build command:** `npm ci`
 - **Start command:** `npm start`
 - **Health check:** `/api/health`
-- **Persistent disk:** mounted at `/opt/render/project/src/Drive/data`
-- **Runtime:** Node.js (Node 20 or later)
+- **Runtime:** Node.js 22 LTS (pinned in `Drive/.node-version`)
+- **Persistent disk:** not available on Render Free
 
-The persistent disk stores the SQLite database, generated backups, Telegram session data held in SQLite, uploaded branding files, and temporary application data. Keep a persistent disk attached to preserve this state across restarts and deployments.
+**Free-tier limitation:** Render Free uses an ephemeral filesystem and can spin the service down after inactivity. SQLite data, Telegram session data stored in SQLite, and other local files may be lost during redeploys or instance replacement. Use this setup for testing only; do not rely on it for durable user accounts or sessions.
 
 ---
 
