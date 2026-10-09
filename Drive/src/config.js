@@ -51,7 +51,10 @@ if (isProduction && !hasPersistentDisk && process.env.ALLOW_EPHEMERAL_STORAGE !=
 
 export const config = {
   port: Number(process.env.PORT) || 3001,
-  host: process.env.HOST || (isProduction ? "0.0.0.0" : "127.0.0.1"),
+  // Production services must bind to all interfaces so Render can detect the port.
+  // Ignore HOST overrides in production; a stale dashboard value like 127.0.0.1
+  // would make the service unreachable from outside its container.
+  host: isProduction ? "0.0.0.0" : (process.env.HOST || "127.0.0.1"),
   secret: readSecret(),
   publicUrl: (process.env.PUBLIC_URL || "").replace(/\/$/, ""),
   maxUploadBytes: Number(process.env.MAX_UPLOAD_BYTES) || 2 * 1024 * 1024 * 1024,
