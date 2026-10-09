@@ -1752,16 +1752,7 @@ function viewSettings() {
       <div class="set-card" style="grid-column:1/-1">
         <div class="set-head">${icon("cloud", { size: 16 })} Branding</div>
         <div class="brand-form">
-          <div class="field brand-logo-row">
-            <label>Logo</label>
-            <div class="brand-logo-pick">
-              <div class="brand-logo-box" id="brandLogoBox">${brandLogoPreview}</div>
-              <div class="brand-logo-btns">
-                        <span class="hint" id="logoMsg">PNG / SVG / WebP, up to 2 MB.</span>
-              </div>
-            </div>
-          </div>
-          <div class="field"><label>App name</label><input id="brName" value="${esc(brand.name)}" maxlength="40" placeholder="Telegram Drive" /></div>
+            <div class="field"><label>App name</label><input id="brName" value="${esc(brand.name)}" maxlength="40" placeholder="Telegram Drive" /></div>
           <div class="field"><label>Accent color</label>
             <div class="brand-color-row">
               <input type="color" id="brAccentColor" value="${esc(brand.accent)}" />
