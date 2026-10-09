@@ -96,6 +96,20 @@ For durable deployment, attach a persistent disk on a plan that supports it and 
 
 ---
 
+## ☁️ Deploy on Vercel
+
+PiyuX Drive includes built-in configuration for Vercel. You can deploy it seamlessly:
+
+1. Import your cloned repository to [Vercel](https://vercel.com/).
+2. Set the **Root Directory** to `Drive` when configuring the project.
+3. Keep the framework preset default (Vercel will detect configuration automatically using the provided `vercel.json`).
+4. Go to **Environment Variables** and add a `SECRET` (a 32+ character random string).
+5. Click **Deploy**.
+
+> **Note:** Vercel serverless functions have an ephemeral filesystem. Your SQLite database and Telegram sessions will be wiped between cold starts or deployments. Vercel deployment is perfect for a quick demo, but persistent use requires a provider with durable storage (VPS or Render with a persistent disk).
+
+---
+
 ## 🛡️ Security & Reliability
 
 PiyuX includes baseline safeguards, but is not yet independently security-audited:

@@ -84,9 +84,13 @@ app.use((err, req, res, _next) => {
   res.status(500).json({ error: err?.message || "Internal error" });
 });
 
-app.listen(config.port, config.host, () => {
-  console.log(`PiyuX Cloud listening on ${config.host}:${config.port}`);
-});
+if (!process.env.VERCEL) {
+  app.listen(config.port, config.host, () => {
+    console.log(`PiyuX Cloud listening on ${config.host}:${config.port}`);
+  });
+}
 
 process.on("uncaughtException", (e) => console.error("[uncaught]", e?.stack || e));
 process.on("unhandledRejection", (e) => console.error("[unhandledRejection]", e?.stack || e));
+
+export default app;

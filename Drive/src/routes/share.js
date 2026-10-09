@@ -295,6 +295,7 @@ pubBin.get("/s/:id/zip", async (req, res, next) => {
     const used = new Set();
     for (const f of r.items) {
       try {
+        if (f.size > 100 * 1024 * 1024) continue; // Skip files > 100MB to prevent OOM (Denial of Service)
         const msg = await getOne(client, peer, f.id);
         const buf = await client.downloadMedia(msg);
         if (!Buffer.isBuffer(buf) || !buf.length) continue;

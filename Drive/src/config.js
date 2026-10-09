@@ -8,7 +8,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const ROOT = path.resolve(__dirname, "..");
 export const DATA_DIR = process.env.DATA_DIR
   ? path.resolve(process.env.DATA_DIR)
-  : path.join(ROOT, "data");
+  : process.env.VERCEL ? "/tmp/data" : path.join(ROOT, "data");
 export const PUBLIC_DIR = path.join(ROOT, "public");
 export const UPLOAD_TMP = path.join(DATA_DIR, "uploads");
 
