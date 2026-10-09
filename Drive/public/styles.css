@@ -1,50 +1,37 @@
 :root {
-  --bg: #202124;
-  --bg-2: #28292c;
-  --bg-3: #35363a;
-  --panel: #28292c;
-  --panel-2: #202124;
-  --border: #3c4043;
-  --border-2: #4a4d52;
-  --text: #e8eaed;
-  --muted: #9aa0a6;
-  --muted-2: #71757a;
-  --accent: #4f8cff;
-  --accent-2: #2f6bff;
-  --accent-soft: rgba(79, 140, 255, 0.16);
-  --danger: #f0556a;
-  --ok: #2ec27e;
-  --warn: #f0a93b;
+  color-scheme: dark;
+  --bg: #07090F;
+  --bg-2: #0B1020;
+  --bg-3: #111827;
+  --panel: #0B1020;
+  --panel-2: #111827;
+  --border: #263247;
+  --border-2: #334563;
+  --text: #F1F5F9;
+  --muted: #94A3B8;
+  --muted-2: #64748B;
+  --accent: #3B82F6;
+  --accent-2: #2563EB;
+  --accent-soft: rgba(59, 130, 246, 0.16);
+  --accent-glow: rgba(59, 130, 246, 0.4);
+  --cyan: #22D3EE;
+  --violet: #8B5CF6;
+  --danger: #F87171;
+  --ok: #10B981;
+  --warn: #FBBF24;
   --radius: 12px;
   --radius-sm: 8px;
   --shadow: 0 2px 8px rgba(0, 0, 0, 0.28), 0 1px 3px rgba(0, 0, 0, 0.2);
   --shadow-lg: 0 8px 28px rgba(0, 0, 0, 0.45);
   --sidebar-w: 256px;
-  --ft-image: #34c0c8;
-  --ft-video: #b06bff;
-  --ft-audio: #f0a93b;
-  --ft-pdf: #e25a5a;
-  --ft-arch: #d39b5a;
+  --ft-image: #22D3EE;
+  --ft-video: #8B5CF6;
+  --ft-audio: #FBBF24;
+  --ft-pdf: #F87171;
+  --ft-arch: #D6A56D;
 }
-[data-theme="light"] {
-  --bg: #f8f9fa;
-  --bg-2: #ffffff;
-  --bg-3: #f1f3f4;
-  --panel: #ffffff;
-  --panel-2: #f8f9fa;
-  --border: #e6e8eb;
-  --border-2: #dadce0;
-  --text: #202124;
-  --muted: #5f6368;
-  --muted-2: #80868b;
-  --accent-soft: rgba(26, 115, 232, 0.08);
-  --shadow: 0 1px 2px rgba(60, 64, 67, 0.1), 0 1px 3px rgba(60, 64, 67, 0.08);
-  --shadow-lg: 0 4px 16px rgba(60, 64, 67, 0.14);
-  --ft-image: #0ea5b7;
-  --ft-video: #7c3aed;
-  --ft-audio: #d97706;
-  --ft-pdf: #dc2626;
-}
+
+
 * { box-sizing: border-box; }
 html, body { height: 100%; }
 body {
@@ -191,7 +178,7 @@ label { color: var(--muted); font-size: 12px; font-weight: 600; display: inline-
   color: var(--text); user-select: none; transition: 0.12s;
 }
 .nav-item:hover { background: var(--bg-3); }
-.nav-item.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.nav-item.active { background: rgba(34, 211, 238, 0.11); color: var(--cyan); font-weight: 600; }
 .nav-item .nm { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .nav-muted { color: var(--muted-2); font-size: 12px; padding: 4px 11px; }
 .theme-row { display: flex; gap: 6px; padding: 0 10px 6px; }
@@ -689,3 +676,11 @@ input:focus, textarea:focus, select:focus { border-color: var(--accent); box-sha
   .searchbox { height: 42px; }
   .searchbox .search { height: 42px; }
 }
+
+
+/* PiyuX midnight identity: premium dark surfaces, cyan active states, violet highlights. */
+::selection { background: rgba(59, 130, 246, 0.32); color: #F8FAFC; }
+:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.nav-item.active .ic,
+.seg.on { color: var(--cyan); }
+.badge-new, .special-feature, .feature-violet { color: #C4B5FD; }

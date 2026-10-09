@@ -11,7 +11,7 @@ const el = (html) => {
 const apiPresets = window.__PRESETS__ || [];
 
 /* ----- branding (instance-level, admin-configurable) ----- */
-let brand = { name: "PiyuX Drive", accent: "#4f8cff", logo: "", tagline: "Secure file sharing", copyright: "" };
+let brand = { name: "PiyuX Drive", accent: "#3B82F6", logo: "", tagline: "Secure file sharing", copyright: "" };
 const CREDIT_HREF = "#";
 const CREDIT_HTML = `PiyuX Drive Made with <span class="heart">&hearts;</span> by <a class="credit-name" href="${CREDIT_HREF}" target="_blank" rel="noopener">Piyush Ramteke</a>`;
 function hexShade(hex, amt) {
@@ -30,30 +30,28 @@ function hexRgba(hex, a) {
 }
 function applyBranding() {
   const root = document.documentElement.style;
-  root.setProperty("--accent", brand.accent);
-  root.setProperty("--accent-2", hexShade(brand.accent, -0.16));
-  root.setProperty("--accent-soft", hexRgba(brand.accent, 0.14));
-  root.setProperty("--accent-glow", hexRgba(brand.accent, 0.4));
+  root.setProperty("--accent", "#3B82F6");
+  root.setProperty("--accent-2", "#2563EB");
+  root.setProperty("--accent-soft", "rgba(59, 130, 246, 0.16)");
+  root.setProperty("--accent-glow", "rgba(59, 130, 246, 0.4)");
   if (brand.name) document.title = brand.name;
   const tm = document.querySelector('meta[name="theme-color"]');
-  if (tm) tm.setAttribute("content", brand.accent);
-  setFavicon(brand.accent);
+  if (tm) tm.setAttribute("content", "#07090F");
+  setFavicon();
   renderBrand();
 }
-function setFavicon(accent) {
-  const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='15' fill='${accent}'/><g fill='none' stroke='white' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'><path d='M44 40H24a9 9 0 1 1 8.6-11.6h2.3a5.8 5.8 0 1 1 0 11.6Z'/></g></svg>`;
-  let link = document.querySelector("link[rel~='icon']");
-  if (!link) { link = document.createElement("link"); link.rel = "icon"; document.head.appendChild(link); }
-  link.href = "data:image/svg+xml," + encodeURIComponent(svg);
+function setFavicon() {
+  const link = document.querySelector("link[rel~='icon']");
+  if (link) link.href = "/assets/images/PIYU-icon-black_512x512.png";
 }
 async function loadBranding() {
   try {
-    brand = { ...brand, ...(await api("/api/branding")) };
+    brand = { ...brand, ...(await api("/api/branding")), name: "PiyuX Drive", accent: "#3B82F6", logo: "" };
   } catch {}
   applyBranding();
 }
 const brandMark = (size) =>
-  brand.logo ? `<img class="brand-logo-img" src="${esc(brand.logo)}" alt="" width="${size}" height="${size}" />` : `<img class="brand-logo-img" src="/assets/images/PIYU-icon-black_512x512.png" alt="" width="${size}" height="${size}" />`;
+  `<img class="brand-logo-img piyu-brand-icon" src="/assets/images/PIYU-icon-black_512x512.png" alt="Piyu icon" width="${size}" height="${size}" />`;
 const brandName = () => esc(brand.name || "PiyuX Drive");
 const brandFootCopyright = () => brand.copyright ? brand.copyright : `© ${new Date().getFullYear()} ${brand.name || "PiyuX Drive"}`;
 
@@ -256,7 +254,7 @@ function theme(t) {
   document.documentElement.dataset.theme = t;
   localStorage.setItem("tg.theme", t);
 }
-theme(localStorage.getItem("tg.theme") || "light");
+theme("dark");
 
 /* ===================== boot ===================== */
 async function boot() {
@@ -475,7 +473,7 @@ function renderApp() {
         <button class="icon-btn menu-btn" id="menuBtn" title="Menu">${icon("menu")}</button>
         <div class="searchbox">${icon("search", { size: 18, cls: "lead" })}<input class="search" id="search" placeholder="Search in drive…" /></div>
         <div class="spacer"></div>
-        <button class="icon-btn" id="themeBtn" title="Toggle theme">${icon(theme.current === "dark" ? "sun" : "moon", { size: 19 })}</button>
+        <button class="icon-btn" id="themeBtn" title="Dark theme enabled" aria-label="Dark theme enabled" disabled>${icon("moon", { size: 19 })}</button>
         <button class="gd-avatar" id="avatarBtn" title="${esc(state.user?.username || "")}">${esc((state.user?.username || "?").charAt(0).toUpperCase())}</button>
       </div>
       <div class="subbar"><div class="title" id="title">—</div><div class="actions" id="topActions"></div></div>
@@ -489,7 +487,7 @@ function renderApp() {
     clearTimeout(window.__st);
     window.__st = setTimeout(() => loadFiles(true), 350);
   };
-  $("#themeBtn").onclick = () => setTheme(theme.current === "dark" ? "light" : "dark");
+  $("#themeBtn").onclick = () => setTheme("dark");
   $("#avatarBtn").onclick = (e) => openAvatarMenu(e.currentTarget);
   $("#newBtn").onclick = (e) => openNewMenu(e.currentTarget);
   mountUploader();
@@ -544,12 +542,12 @@ function renderSidebar() {
   $$(".nav-item[data-folder]", nav).forEach((n) => (n.onclick = () => openFolder(n.dataset.folder)));
   $$(".nav-item[data-view]", nav).forEach((n) => (n.onclick = () => openView(n.dataset.view)));
 }
-theme.current = localStorage.getItem("tg.theme") || "light";
+theme.current = "dark";
 window.setTheme = (t) => {
-  theme.current = t;
-  theme(t);
+  theme.current = "dark";
+  theme("dark");
   const b = $("#themeBtn");
-  if (b) b.innerHTML = icon(theme.current === "dark" ? "sun" : "moon", { size: 19 });
+  if (b) b.innerHTML = icon("sun", { size: 19 });
   renderSidebar();
 };
 
@@ -1749,25 +1747,12 @@ function viewSettings() {
       ${a.id !== state.currentAccountId ? `<button class="btn-2" onclick="switchAcc('${a.id}')">Switch</button>` : ""}
       ${isAdmin ? `<button class="icon-btn danger" title="Remove" onclick="delAcc('${a.id}')">${icon("trash", { size: 16 })}</button>` : ""}
     </div>`);
-  const brandLogoPreview = brand.logo
-    ? `<img class="brand-logo-img" src="${esc(brand.logo)}" alt="" width="40" height="40" />`
-    : `<span class="brand-logo-ph">${brandMark(28)}</span>`;
+  const brandLogoPreview = brandMark(40);
   const brandCard = isAdmin ? `
       <div class="set-card" style="grid-column:1/-1">
         <div class="set-head">${icon("cloud", { size: 16 })} Branding</div>
         <div class="brand-form">
-          <div class="field brand-logo-row">
-            <label>Logo</label>
-            <div class="brand-logo-pick">
-              <div class="brand-logo-box" id="brandLogoBox">${brandLogoPreview}</div>
-              <div class="brand-logo-btns">
-                <label class="btn-2">${icon("upload", { size: 14 })} Upload<input type="file" id="logoFile" accept="image/*" hidden /></label>
-                ${brand.logo ? `<button class="btn-2 danger" id="logoRemove">${icon("trash", { size: 14 })} Remove</button>` : ""}
-                <span class="hint" id="logoMsg">PNG / SVG / WebP, up to 2 MB.</span>
-              </div>
-            </div>
-          </div>
-          <div class="field"><label>App name</label><input id="brName" value="${esc(brand.name)}" maxlength="40" placeholder="Telegram Drive" /></div>
+            <div class="field"><label>App name</label><input id="brName" value="${esc(brand.name)}" maxlength="40" placeholder="Telegram Drive" /></div>
           <div class="field"><label>Accent color</label>
             <div class="brand-color-row">
               <input type="color" id="brAccentColor" value="${esc(brand.accent)}" />
@@ -1804,7 +1789,7 @@ function viewSettings() {
         <div class="set-head">${icon("sun", { size: 16 })} Appearance</div>
         <div class="theme-row big">
           <button class="seg ${theme.current === "dark" ? "on" : ""}" onclick="setTheme('dark')">${icon("moon", { size: 16 })} Dark</button>
-          <button class="seg ${theme.current === "light" ? "on" : ""}" onclick="setTheme('light')">${icon("sun", { size: 16 })} Light</button>
+          <button class="seg" disabled aria-label="Light theme disabled">${icon("sun", { size: 16 })} Light</button>
         </div>
       </div>
       <div class="set-card" style="grid-column:1/-1">
@@ -1852,39 +1837,6 @@ function wireBranding() {
       save.disabled = false;
     }
   };
-  const fileInput = $("#logoFile");
-  if (fileInput) {
-    fileInput.onchange = async () => {
-      const f = fileInput.files?.[0];
-      if (!f) return;
-      const msg = $("#logoMsg");
-      if (f.size > 2 * 1024 * 1024) return (msg.textContent = "Too large (max 2 MB).");
-      msg.textContent = "Uploading…";
-      try {
-        const buf = await f.arrayBuffer();
-        const r = await api("/api/branding/logo", { method: "POST", headers: { "Content-Type": f.type }, body: buf });
-        brand.logo = r.logo;
-        $("#brandLogoBox").innerHTML = `<img class="brand-logo-img" src="${esc(brand.logo)}" alt="" width="40" height="40" />`;
-        msg.textContent = "Logo updated.";
-        viewSettings();
-      } catch (e) {
-        msg.textContent = e.message;
-      }
-    };
-  }
-  const rm = $("#logoRemove");
-  if (rm) {
-    rm.onclick = async () => {
-      if (!(await uiConfirm("The custom logo will be removed and the default mark used.", { title: "Remove logo?", okText: "Remove", danger: true, icon: icon("trash", { size: 20 }) }))) return;
-      try {
-        await api("/api/branding/logo", { method: "DELETE" });
-        brand.logo = "";
-        viewSettings();
-      } catch (e) {
-        toast(e.message);
-      }
-    };
-  }
 }
 window.switchAcc = async (id) => {
   await api("/api/accounts/switch/" + id, { method: "POST" });
