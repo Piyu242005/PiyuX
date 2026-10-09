@@ -1,18 +1,14 @@
 # PiyuX Cloud — Render Blueprint
-# Deploy from the repository root. The app source is in Drive/.
+# For the free Render web service. No persistent disk is configured.
 services:
   - type: web
     name: piyux-cloud
     runtime: node
-    plan: starter
+    plan: free
     rootDir: Drive
     buildCommand: npm ci
     startCommand: npm start
     healthCheckPath: /api/health
-    disk:
-      name: piyux-cloud-data
-      mountPath: /opt/render/project/src/Drive/data
-      sizeGB: 1
     envVars:
       - key: NODE_ENV
         value: production
@@ -21,7 +17,7 @@ services:
       - key: SECRET
         generateValue: true
       - key: DATA_DIR
-        value: /opt/render/project/src/Drive/data
+        value: /opt/render/project/src/data
       - key: PUBLIC_URL
         sync: false
       - key: API_PRESETS
