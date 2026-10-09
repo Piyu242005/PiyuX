@@ -1,6 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
+import os from "node:os";
+import path from "node:path";
+import fs from "node:fs";
 import { once } from "node:events";
 import { setTimeout as delay } from "node:timers/promises";
 import { createServer } from "node:net";
@@ -16,6 +19,7 @@ async function freePort() {
 
 test("HTTP health endpoint responds with security headers", async (t) => {
   const port = await freePort();
+  const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), "piyux-test-"));
   const child = spawn(process.execPath, ["src/server.js"], {
     cwd: process.cwd(),
     env: {
@@ -24,14 +28,14 @@ test("HTTP health endpoint responds with security headers", async (t) => {
       HOST: "127.0.0.1",
       PORT: String(port),
       SECRET: "test-secret-that-is-long-enough-for-tests-only",
-      DATA_DIR: process.env.TMPDIR ? `${process.env.TMPDIR}/piyux-test-${process.pid}` : undefined
+      DATA_DIR: dataDir
     },
     stdio: ["ignore", "pipe", "pipe"]
   });
   let logs = "";
   child.stdout.on("data", (b) => { logs += b.toString(); });
   child.stderr.on("data", (b) => { logs += b.toString(); });
-  t.after(() => child.kill("SIGTERM"));
+  t.after(() => { child.kill("SIGTERM"); fs.rmSync(dataDir, { recursive: true, force: true }); });
 
   let response;
   const deadline = Date.now() + 12_000;
