@@ -1758,8 +1758,7 @@ function viewSettings() {
               <div class="brand-logo-box" id="brandLogoBox">${brandLogoPreview}</div>
               <div class="brand-logo-btns">
                 <label class="btn-2">${icon("upload", { size: 14 })} Upload<input type="file" id="logoFile" accept="image/*" hidden /></label>
-                ${brand.logo ? `<button class="btn-2 danger" id="logoRemove">${icon("trash", { size: 14 })} Remove</button>` : ""}
-                <span class="hint" id="logoMsg">PNG / SVG / WebP, up to 2 MB.</span>
+                        <span class="hint" id="logoMsg">PNG / SVG / WebP, up to 2 MB.</span>
               </div>
             </div>
           </div>
@@ -1860,7 +1859,7 @@ function wireBranding() {
         const buf = await f.arrayBuffer();
         const r = await api("/api/branding/logo", { method: "POST", headers: { "Content-Type": f.type }, body: buf });
         brand.logo = r.logo;
-        $("#brandLogoBox").innerHTML = `<img class="brand-logo-img" src="${esc(brand.logo)}" alt="" width="40" height="40" />`;
+        $("#brandLogoBox").innerHTML = brandMark(40);
         msg.textContent = "Logo updated.";
         viewSettings();
       } catch (e) {
