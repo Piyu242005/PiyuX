@@ -11,7 +11,7 @@ const el = (html) => {
 const apiPresets = window.__PRESETS__ || [];
 
 /* ----- branding (instance-level, admin-configurable) ----- */
-let brand = { name: "PiyuX Drive", accent: "#4f8cff", logo: "", tagline: "Secure file sharing", copyright: "" };
+let brand = { name: "PiyuX Drive", accent: "#3B82F6", logo: "", tagline: "Secure file sharing", copyright: "" };
 const CREDIT_HREF = "#";
 const CREDIT_HTML = `PiyuX Drive Made with <span class="heart">&hearts;</span> by <a class="credit-name" href="${CREDIT_HREF}" target="_blank" rel="noopener">Piyush Ramteke</a>`;
 function hexShade(hex, amt) {
@@ -30,30 +30,32 @@ function hexRgba(hex, a) {
 }
 function applyBranding() {
   const root = document.documentElement.style;
-  root.setProperty("--accent", brand.accent);
-  root.setProperty("--accent-2", hexShade(brand.accent, -0.16));
-  root.setProperty("--accent-soft", hexRgba(brand.accent, 0.14));
-  root.setProperty("--accent-glow", hexRgba(brand.accent, 0.4));
+  root.setProperty("--accent", "#3B82F6");
+  root.setProperty("--accent-2", "#2563EB");
+  root.setProperty("--accent-soft", "rgba(59, 130, 246, 0.16)");
+  root.setProperty("--accent-glow", "rgba(59, 130, 246, 0.4)");
   if (brand.name) document.title = brand.name;
   const tm = document.querySelector('meta[name="theme-color"]');
-  if (tm) tm.setAttribute("content", brand.accent);
-  setFavicon(brand.accent);
+  if (tm) tm.setAttribute("content", "#07090F");
+  setFavicon();
   renderBrand();
 }
-function setFavicon(accent) {
-  const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='15' fill='${accent}'/><g fill='none' stroke='white' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'><path d='M44 40H24a9 9 0 1 1 8.6-11.6h2.3a5.8 5.8 0 1 1 0 11.6Z'/></g></svg>`;
+function setFavicon() {
+  const link = document.querySelector("link[rel~='icon']");
+  if (link) link.href = "/assets/images/PIYU-icon-black_512x512.png";
+  return;
   let link = document.querySelector("link[rel~='icon']");
   if (!link) { link = document.createElement("link"); link.rel = "icon"; document.head.appendChild(link); }
   link.href = "data:image/svg+xml," + encodeURIComponent(svg);
 }
 async function loadBranding() {
   try {
-    brand = { ...brand, ...(await api("/api/branding")) };
+    brand = { ...brand, ...(await api("/api/branding")), name: "PiyuX Drive", accent: "#3B82F6", logo: "" };
   } catch {}
   applyBranding();
 }
 const brandMark = (size) =>
-  brand.logo ? `<img class="brand-logo-img" src="${esc(brand.logo)}" alt="" width="${size}" height="${size}" />` : `<img class="brand-logo-img" src="/assets/images/PIYU-icon-black_512x512.png" alt="" width="${size}" height="${size}" />`;
+  `<img class="brand-logo-img piyu-brand-icon" src="/assets/images/PIYU-icon-black_512x512.png" alt="Piyu icon" width="${size}" height="${size}" />`;
 const brandName = () => esc(brand.name || "PiyuX Drive");
 const brandFootCopyright = () => brand.copyright ? brand.copyright : `© ${new Date().getFullYear()} ${brand.name || "PiyuX Drive"}`;
 
@@ -256,7 +258,7 @@ function theme(t) {
   document.documentElement.dataset.theme = t;
   localStorage.setItem("tg.theme", t);
 }
-theme(localStorage.getItem("tg.theme") || "light");
+theme("dark");
 
 /* ===================== boot ===================== */
 async function boot() {
@@ -544,12 +546,12 @@ function renderSidebar() {
   $$(".nav-item[data-folder]", nav).forEach((n) => (n.onclick = () => openFolder(n.dataset.folder)));
   $$(".nav-item[data-view]", nav).forEach((n) => (n.onclick = () => openView(n.dataset.view)));
 }
-theme.current = localStorage.getItem("tg.theme") || "light";
+theme.current = "dark";
 window.setTheme = (t) => {
-  theme.current = t;
-  theme(t);
+  theme.current = "dark";
+  theme("dark");
   const b = $("#themeBtn");
-  if (b) b.innerHTML = icon(theme.current === "dark" ? "sun" : "moon", { size: 19 });
+  if (b) b.innerHTML = icon("sun", { size: 19 });
   renderSidebar();
 };
 
@@ -1804,7 +1806,7 @@ function viewSettings() {
         <div class="set-head">${icon("sun", { size: 16 })} Appearance</div>
         <div class="theme-row big">
           <button class="seg ${theme.current === "dark" ? "on" : ""}" onclick="setTheme('dark')">${icon("moon", { size: 16 })} Dark</button>
-          <button class="seg ${theme.current === "light" ? "on" : ""}" onclick="setTheme('light')">${icon("sun", { size: 16 })} Light</button>
+          <button class="seg" disabled aria-label="Light theme disabled">${icon("sun", { size: 16 })} Light</button>
         </div>
       </div>
       <div class="set-card" style="grid-column:1/-1">
