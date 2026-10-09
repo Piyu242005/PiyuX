@@ -12,8 +12,8 @@ const apiPresets = window.__PRESETS__ || [];
 
 /* ----- branding (instance-level, admin-configurable) ----- */
 let brand = { name: "PiyuX Drive", accent: "#4f8cff", logo: "", tagline: "Secure file sharing", copyright: "" };
-const CREDIT_HREF = "https://linktr.ee/thesamgfx";
-const CREDIT_HTML = `Telegram Web Drive Made with <span class="heart">&hearts;</span> by <a class="credit-name" href="${CREDIT_HREF}" target="_blank" rel="noopener">Samer Ahmed</a>`;
+const CREDIT_HREF = "#";
+const CREDIT_HTML = `PiyuX Drive Made with <span class="heart">&hearts;</span> by <a class="credit-name" href="${CREDIT_HREF}" target="_blank" rel="noopener">Piyush Ramteke</a>`;
 function hexShade(hex, amt) {
   const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || "#4f8cff"));
   if (!m) return hex;
@@ -1780,7 +1780,7 @@ function viewSettings() {
           <div class="field"><label>Share tagline</label><input id="brTagline" value="${esc(brand.tagline)}" maxlength="80" placeholder="Secure file sharing" /></div>
           <div class="field"><label>Copyright line <span class="hint">(leave blank to auto-use “© year · name”)</span></label><input id="brCopy" value="${esc(brand.copyright)}" maxlength="80" placeholder="© ${new Date().getFullYear()} My Drive" /></div>
           <div class="brand-actions"><button class="primary" id="brSave">${icon("check", { size: 15 })} Save branding</button><div class="err" id="brErr"></div></div>
-          <p class="hint brand-credit-note">The credit “Telegram Web Drive Made with ♥ by Samer Ahmed” is always shown on public pages and cannot be removed.</p>
+          <p class="hint brand-credit-note">The credit “PiyuX Drive Made with ♥ by Piyush Ramteke” is always shown on public pages and cannot be removed.</p>
         </div>
       </div>` : "";
   content().innerHTML = `

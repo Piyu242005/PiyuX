@@ -24,14 +24,14 @@
     "brandable"
   ],
   "license": "MIT",
-  "author": "Samer Ahmed",
-  "homepage": "https://github.com/Sam8r/TGWebDrive",
+  "author": "Piyush Ramteke",
+  "homepage": "https://github.com/Piyu242005/PiyuX",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Sam8r/TGWebDrive.git"
+    "url": "git+https://github.com/Piyu242005/PiyuX.git"
   },
   "bugs": {
-    "url": "https://github.com/Sam8r/TGWebDrive/issues"
+    "url": "https://github.com/Piyu242005/PiyuX/issues"
   },
   "dependencies": {
     "archiver": "^7.0.1",
