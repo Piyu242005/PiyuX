@@ -1837,7 +1837,8 @@ function wireBranding() {
       save.disabled = false;
     }
   };
-
+}
+window.switchAcc = async (id) => {
   await api("/api/accounts/switch/" + id, { method: "POST" });
   state.currentAccountId = id;
   state.currentFolder = null;
