@@ -20,6 +20,8 @@ services:
         value: 0.0.0.0
       - key: SECRET
         generateValue: true
+      - key: DATA_DIR
+        value: /opt/render/project/src/Drive/data
       - key: PUBLIC_URL
         sync: false
       - key: API_PRESETS
