@@ -1867,19 +1867,7 @@ function wireBranding() {
       }
     };
   }
-  const rm = $("#logoRemove");
-  if (rm) {
-    rm.onclick = async () => {
-      if (!(await uiConfirm("The custom logo will be removed and the default mark used.", { title: "Remove logo?", okText: "Remove", danger: true, icon: icon("trash", { size: 20 }) }))) return;
-      try {
-        await api("/api/branding/logo", { method: "DELETE" });
-        brand.logo = "";
-        viewSettings();
-      } catch (e) {
-        toast(e.message);
-      }
-    };
-  }
+
 }
 window.switchAcc = async (id) => {
   await api("/api/accounts/switch/" + id, { method: "POST" });
