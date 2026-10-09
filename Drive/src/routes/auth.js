@@ -11,6 +11,7 @@ import {
   destroyUserSessions,
 } from "../middleware.js";
 import { hashPassword, verifyPassword, uid } from "../util.js";
+import { validatePassword, consumeRateLimit } from "../security.js";
 import { beginLogin, resendCode, finishLogin, cancelLogin, dropClient } from "../tg/manager.js";
 
 export const auth = Router();
@@ -50,7 +51,7 @@ auth.post("/auth/setup", (req, res) => {
   const username = String(req.body?.username || "admin").trim().toLowerCase();
   const password = String(req.body?.password || "");
   if (!/^[a-z0-9_.-]{3,32}$/i.test(username)) return res.status(400).json({ error: "Username must be 3-32 chars (letters, numbers, _ . -)" });
-  if (password.length < 12) return res.status(400).json({ error: "Password must be at least 12 characters" });
+  if (!validatePassword(password)) return res.status(400).json({ error: "Password must be at least 12 characters" });
   const id = uid();
   try {
     stmt.addUser.run({ id, username, password_hash: hashPassword(password), role: "admin", created_at: Date.now() });
@@ -66,31 +67,14 @@ const LOGIN_WINDOW_MS = 15 * 60 * 1000;
 const LOGIN_MAX_ATTEMPTS = 5;
 const LOGIN_MAX_KEYS = 10_000;
 
-function consumeLoginAttempt(ip, now) {
-  let entry = loginAttempts.get(ip);
-  if (!entry || now - entry.windowStart >= LOGIN_WINDOW_MS) {
-    entry = { count: 0, windowStart: now };
-    loginAttempts.set(ip, entry);
-  }
-  if (entry.count >= LOGIN_MAX_ATTEMPTS) {
-    return Math.max(1, Math.ceil((LOGIN_WINDOW_MS - (now - entry.windowStart)) / 1000));
-  }
-  entry.count += 1;
-  if (loginAttempts.size > LOGIN_MAX_KEYS) {
-    for (const [key, value] of loginAttempts) {
-      if (now - value.windowStart >= LOGIN_WINDOW_MS) loginAttempts.delete(key);
-      if (loginAttempts.size <= LOGIN_MAX_KEYS) break;
-    }
-  }
-  return 0;
-}
-
 auth.post("/auth/login", (req, res) => {
   const ip = String(req.ip || req.socket?.remoteAddress || "unknown");
   const now = Date.now();
-  const retryAfter = consumeLoginAttempt(ip, now);
-  if (retryAfter) {
-    res.setHeader("Retry-After", String(retryAfter));
+  const limit = consumeRateLimit(loginAttempts, ip, {
+    now, windowMs: LOGIN_WINDOW_MS, limit: LOGIN_MAX_ATTEMPTS, maxKeys: LOGIN_MAX_KEYS,
+  });
+  if (!limit.allowed) {
+    res.setHeader("Retry-After", String(limit.retryAfter));
     return res.status(429).json({ error: "Too many login attempts. Please try again later." });
   }
 
@@ -119,7 +103,7 @@ auth.post("/auth/password", requireAppAuth, (req, res) => {
   const next = String(req.body?.next || "");
   const user = stmt.getUserById.get(req.user.id);
   if (!user || !verifyPassword(cur, user.password_hash)) return res.status(401).json({ error: "Current password is wrong" });
-  if (next.length < 12) return res.status(400).json({ error: "New password must be at least 12 characters" });
+  if (!validatePassword(next)) return res.status(400).json({ error: "New password must be at least 12 characters" });
   stmt.updateUser.run({ id: user.id, password_hash: hashPassword(next), role: user.role });
   destroyUserSessions(user.id);
   destroySession(req, res);
@@ -157,7 +141,7 @@ auth.patch("/users/:id", requireAppAuth, requireAdmin, (req, res) => {
     if (admins <= 1) return res.status(400).json({ error: "Cannot demote the last admin" });
   }
   const next = String(req.body?.password || "");
-  if (next && next.length < 12) return res.status(400).json({ error: "Password must be at least 12 characters" });
+  if (next && !validatePassword(next)) return res.status(400).json({ error: "Password must be at least 12 characters" });
   const password_hash = next ? hashPassword(next) : user.password_hash;
   stmt.updateUser.run({ id: user.id, password_hash, role });
   if (next) destroyUserSessions(user.id);
