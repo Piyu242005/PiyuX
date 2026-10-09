@@ -96,6 +96,26 @@ For durable deployment, attach a persistent disk on a plan that supports it and 
 
 ---
 
+## ▲ Deploy the frontend on Vercel (Render backend)
+
+**Important architecture note:** PiyuX is a long-running Express/Telegram application backed by `better-sqlite3`. Vercel's serverless functions are not a drop-in host for this backend: SQLite data and Telegram sessions require durable shared storage, while uploads, Server-Sent Events, and media downloads can exceed serverless execution/body limits. The included `vercel.json` intentionally deploys only the static frontend; it does not convert the backend into serverless functions.
+
+### Vercel setup
+
+1. Import `Piyu242005/PiyuX` into [Vercel](https://vercel.com/new).
+2. Leave the project **Root Directory** at the repository root (do not set it to `Drive`).
+3. Keep the repository's `vercel.json` build/routing configuration.
+4. Deploy. The static dashboard assets will be served, but API-dependent features need a separately deployed backend.
+5. Keep the full Express backend on Render or a persistent VPS, with durable storage configured. Do not put `SECRET`, Telegram API credentials, or Telegram sessions into frontend environment variables.
+
+### Frontend/backend compatibility status
+
+The current browser code calls same-origin `/api/...` endpoints and uses same-origin upload progress (SSE), file-stream, and share URLs. Therefore, **the Vercel static frontend and Render backend are not yet a working split deployment by configuration alone**. To connect them safely, the frontend needs a configurable API origin, all API/upload/SSE/share URLs must use it, and the backend needs explicit credentialed CORS plus cookie/session settings appropriate for the chosen domains. Cross-site cookies on unrelated `vercel.app` and `onrender.com` domains are unreliable for this session-cookie design; using custom subdomains under one registrable domain is strongly preferred (for example, `drive.example.com` and `api.example.com`). Those code changes and domain settings are not claimed as completed by this static-hosting config.
+
+If you want one URL with all current features working, deploy the **whole application** as a long-running service on Render with a supported persistent disk, or on a VPS with durable storage. Vercel can host the static frontend once the API-origin/CORS/cookie work is completed, but should not be treated as the persistent backend or file-streaming layer.
+
+---
+
 ## 🛡️ Security & Reliability
 
 PiyuX includes baseline safeguards, but is not yet independently security-audited:
