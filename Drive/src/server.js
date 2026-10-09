@@ -85,7 +85,7 @@ app.use((err, req, res, _next) => {
 });
 
 app.listen(config.port, config.host, () => {
-  console.log(`tgdrive listening on http://${config.host}:${config.port} (proxied via Apache)`);
+  console.log(`PiyuX Cloud listening on ${config.host}:${config.port}`);
 });
 
 process.on("uncaughtException", (e) => console.error("[uncaught]", e?.stack || e));
