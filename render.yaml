@@ -1,0 +1,28 @@
+# PiyuX Cloud — Render Blueprint
+# Deploy from the repository root. The app source is in Drive/.
+services:
+  - type: web
+    name: piyux-cloud
+    runtime: node
+    plan: starter
+    rootDir: Drive
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /api/health
+    disk:
+      name: piyux-cloud-data
+      mountPath: /opt/render/project/src/Drive/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: SECRET
+        generateValue: true
+      - key: PUBLIC_URL
+        sync: false
+      - key: API_PRESETS
+        sync: false
+      - key: MAX_UPLOAD_BYTES
+        value: "2147483648"
