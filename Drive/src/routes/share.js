@@ -75,13 +75,34 @@ share.get("/public/share/:id", (req, res) => {
   res.json(publicShare(s));
 });
 
+const sharePasswordAttempts = new Map();
+const SHARE_PASSWORD_WINDOW_MS = 15 * 60 * 1000;
+const SHARE_PASSWORD_MAX_ATTEMPTS = 8;
+
 share.post("/public/share/:id/access", (req, res) => {
   const s = stmt.getShare.get(req.params.id);
   if (!s) return res.status(404).json({ error: "Share not found" });
   if (s.expires_at && s.expires_at < Date.now()) return res.status(410).json({ error: "Share expired" });
   if (!s.password_hash) return res.json({ token: signAccess(s.id) });
-  if (!verifyPassword(String(req.body?.password || ""), s.password_hash))
+
+  const ip = String(req.ip || req.socket?.remoteAddress || "unknown");
+  const limitKey = `${ip}:${s.id}`;
+  const now = Date.now();
+  let attempt = sharePasswordAttempts.get(limitKey);
+  if (!attempt || now - attempt.windowStart >= SHARE_PASSWORD_WINDOW_MS) {
+    attempt = { count: 0, windowStart: now };
+    sharePasswordAttempts.set(limitKey, attempt);
+  }
+  if (attempt.count >= SHARE_PASSWORD_MAX_ATTEMPTS) {
+    const retryAfter = Math.max(1, Math.ceil((SHARE_PASSWORD_WINDOW_MS - (now - attempt.windowStart)) / 1000));
+    res.setHeader("Retry-After", String(retryAfter));
+    return res.status(429).json({ error: "Too many password attempts. Please try again later." });
+  }
+  attempt.count += 1;
+  if (!verifyPassword(String(req.body?.password || ""), s.password_hash)) {
     return res.status(401).json({ error: "Wrong password" });
+  }
+  sharePasswordAttempts.delete(limitKey);
   res.json({ token: signAccess(s.id) });
 });
 
