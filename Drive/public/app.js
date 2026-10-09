@@ -473,7 +473,7 @@ function renderApp() {
         <button class="icon-btn menu-btn" id="menuBtn" title="Menu">${icon("menu")}</button>
         <div class="searchbox">${icon("search", { size: 18, cls: "lead" })}<input class="search" id="search" placeholder="Search in drive…" /></div>
         <div class="spacer"></div>
-        <button class="icon-btn" id="themeBtn" title="Toggle theme">${icon(theme.current === "dark" ? "sun" : "moon", { size: 19 })}</button>
+        <button class="icon-btn" id="themeBtn" title="Dark theme enabled" aria-label="Dark theme enabled" disabled>${icon("moon", { size: 19 })}</button>
         <button class="gd-avatar" id="avatarBtn" title="${esc(state.user?.username || "")}">${esc((state.user?.username || "?").charAt(0).toUpperCase())}</button>
       </div>
       <div class="subbar"><div class="title" id="title">—</div><div class="actions" id="topActions"></div></div>
