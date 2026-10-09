@@ -130,6 +130,12 @@ files.post("/files/upload", requireAppAuth, requireAccount, async (req, res, nex
     const client = await getConnectedClient(req.accountId);
     const fileName = safeFilename(decodeURIComponent(req.headers["x-filename"] || "file"));
     const size = Number(req.headers["x-filesize"] || 0);
+    if (!Number.isFinite(size) || size < 0) {
+      throw new HttpError(400, "Invalid upload size");
+    }
+    if (size > config.maxUploadBytes) {
+      throw new HttpError(413, "Upload exceeds the configured maximum size");
+    }
     const caption = req.headers["x-caption"] ? decodeURIComponent(req.headers["x-caption"]) : "";
     const forceDocument = req.headers["x-force-document"] !== "0";
 

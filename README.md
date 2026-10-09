@@ -1,6 +1,6 @@
 <div align="center">
   <h1>🚀 PiyuX Drive</h1>
-  <p><strong>Secure, Unlimited, Telegram-Backed Cloud Storage</strong></p>
+  <p><strong>Self-Hosted, Telegram-Backed Cloud Storage</strong></p>
 
   <p>
     <a href="https://github.com/Piyu242005/PiyuX"><img src="https://img.shields.io/github/stars/Piyu242005/PiyuX?style=for-the-badge&color=007ec6" alt="Stars" /></a>
@@ -22,10 +22,10 @@ The application source is in the `Drive/` directory.
 
 ## ✨ Features
 
-- **♾️ Unlimited Storage**: Backed securely by Telegram's infrastructure.
+- **☁️ Telegram-backed storage**: Store and retrieve files via your Telegram account. Availability, upload limits, and account/API limits depend on Telegram.
 - **⚡ Blazing Fast**: Native streaming for videos and music directly from the dashboard.
 - **🎨 Beautiful UI**: Modern, responsive, mobile-friendly interface designed for ease of use.
-- **🔒 Enterprise-Grade Security**: Brute-force protection, automated database backups, secure session cookies, and encrypted data tracking.
+- **🔒 Security controls**: Password hashing, HTTP-only session cookies, rate limiting, and expiring/password-protected share links. Review the limitations below before exposing it publicly.
 - **🔗 Smart Sharing**: Create public, password-protected, or expiring links for any file or folder.
 - **🛠️ Self-Hosted**: Run it anywhere—locally, on VPS, or PaaS providers like Render/Heroku.
 
@@ -90,17 +90,30 @@ The Blueprint is configured for the **Free** instance type:
 - **Runtime:** Node.js 22 LTS (pinned in `Drive/.node-version`)
 - **Persistent disk:** not available on Render Free
 
-**Free-tier limitation:** Render Free uses an ephemeral filesystem and can spin the service down after inactivity. SQLite data, Telegram session data stored in SQLite, and other local files may be lost during redeploys or instance replacement. Use this setup for testing only; do not rely on it for durable user accounts or sessions.
+**Important:** this Blueprint is a demo configuration. Render Free uses an ephemeral filesystem and may lose SQLite metadata, account sessions, and local files across deploys/instance replacement. Do not store important files, user accounts, or Telegram session credentials on this configuration.
+
+For durable deployment, attach a persistent disk on a plan that supports it and set `DATA_DIR` to the mounted path (for example, `/var/data`) and `PERSISTENT_STORAGE=true`. Confirm the platform's current storage/plan rules before deployment. Keep `SECRET` stable across deploys, and test a database backup restore before treating the service as production-ready.
 
 ---
 
 ## 🛡️ Security & Reliability
 
-PiyuX Drive prioritizes the safety of your files and accounts:
-- **Rate-Limiting**: Built-in protection against brute-force login attempts.
-- **Automated Backups**: Your SQLite metadata is automatically backed up daily to prevent data loss.
-- **Secure File Handling**: OS-native temp directories and robust OS pathing prevent directory traversal or failing uploads.
-- **Important Notes**: Set `PUBLIC_URL` correctly for share links. `SECRET` must remain stable across restarts to avoid invalidating sessions. The `/api/health` route checks that the web process responds.
+PiyuX includes baseline safeguards, but is not yet independently security-audited:
+- **Passwords:** setup, user creation, and password changes require at least 12 characters.
+- **Login throttling:** repeated failed login attempts from one client are temporarily blocked. This in-memory limiter resets on restart and is not shared across multiple instances.
+- **Session handling:** cookies are HTTP-only, SameSite=Lax, and Secure when served through HTTPS; sessions are invalidated after password changes.
+- **Share protection:** password-protected share access is throttled. Treat public links as bearer credentials and only share sensitive data with trusted recipients.
+- **Uploads:** upload size headers are validated against the configured maximum. Reverse proxies should also enforce a request-body size limit.
+
+### Production checklist
+1. Use a persistent disk/volume for `DATA_DIR`, and enable it only after confirming the mounted path is writable and durable.
+2. Keep `SECRET`, Telegram API credentials, and Telegram session data private. Never commit real `.env` files or session exports.
+3. Test restore from a fresh SQLite backup; a backup job alone does not prove recovery works.
+4. Run `npm test` and the GitHub Actions workflow before release.
+5. Review multi-user access boundaries before allowing untrusted users: the app currently uses shared Telegram account records, so do not assume it provides per-user tenant isolation.
+6. Exercise login, logout, password changes, account switching, file upload/download, and password-protected/expiring sharing against a staging deployment.
+
+The `/api/health` route only verifies that the web process responds; it is not an end-to-end availability or data-integrity test.
 
 ---
 

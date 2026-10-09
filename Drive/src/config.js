@@ -15,9 +15,6 @@ export const UPLOAD_TMP = path.join(DATA_DIR, "uploads");
 for (const d of [DATA_DIR, UPLOAD_TMP]) fs.mkdirSync(d, { recursive: true });
 
 function readSecret() {
-  // Production secrets should be provided through the hosting platform's
-  // environment settings. Never try to persist secrets into an ephemeral
-  // application directory in production.
   if (process.env.SECRET && process.env.SECRET.length >= 32) return process.env.SECRET;
   if (process.env.NODE_ENV === "production") {
     throw new Error("SECRET must be configured as an environment variable (at least 32 characters) in production.");
@@ -45,16 +42,19 @@ function readSecret() {
   return generated;
 }
 
+const isProduction = process.env.NODE_ENV === "production";
+const hasPersistentDisk = process.env.PERSISTENT_STORAGE === "true";
+
+if (isProduction && !hasPersistentDisk && process.env.ALLOW_EPHEMERAL_STORAGE !== "true") {
+  console.warn("[storage-warning] Persistent storage is not enabled. SQLite user data and Telegram sessions may be lost when the instance restarts or redeploys. Set PERSISTENT_STORAGE=true only after attaching durable storage.");
+}
+
 export const config = {
   port: Number(process.env.PORT) || 3001,
-  // Render and most container hosts route traffic to the port on all interfaces.
-  host: process.env.HOST || (process.env.NODE_ENV === "production" ? "0.0.0.0" : "127.0.0.1"),
+  host: process.env.HOST || (isProduction ? "0.0.0.0" : "127.0.0.1"),
   secret: readSecret(),
   publicUrl: (process.env.PUBLIC_URL || "").replace(/\/$/, ""),
   maxUploadBytes: Number(process.env.MAX_UPLOAD_BYTES) || 2 * 1024 * 1024 * 1024,
-  // Max bytes per Telegram message. Files larger than this are transparently
-  // split into multipart entries that reassemble on download. ~1.9 GiB keeps a
-  // safe margin under Telegram's 2 GiB per-file cap.
   splitPartBytes: Number(process.env.SPLIT_PART_BYTES) || Math.floor(1.9 * 1024 * 1024 * 1024),
   apiPresets: (process.env.API_PRESETS || "")
     .split(",")
@@ -64,5 +64,6 @@ export const config = {
       const [id, hash] = s.split(":");
       return { id: id.trim(), hash: hash.trim() };
     }),
-  isProd: process.env.NODE_ENV === "production",
+  isProd: isProduction,
+  hasPersistentDisk,
 };
