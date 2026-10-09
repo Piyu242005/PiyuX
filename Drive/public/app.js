@@ -43,10 +43,6 @@ function applyBranding() {
 function setFavicon() {
   const link = document.querySelector("link[rel~='icon']");
   if (link) link.href = "/assets/images/PIYU-icon-black_512x512.png";
-  return;
-  let link = document.querySelector("link[rel~='icon']");
-  if (!link) { link = document.createElement("link"); link.rel = "icon"; document.head.appendChild(link); }
-  link.href = "data:image/svg+xml," + encodeURIComponent(svg);
 }
 async function loadBranding() {
   try {
@@ -491,7 +487,7 @@ function renderApp() {
     clearTimeout(window.__st);
     window.__st = setTimeout(() => loadFiles(true), 350);
   };
-  $("#themeBtn").onclick = () => setTheme(theme.current === "dark" ? "light" : "dark");
+  $("#themeBtn").onclick = () => setTheme("dark");
   $("#avatarBtn").onclick = (e) => openAvatarMenu(e.currentTarget);
   $("#newBtn").onclick = (e) => openNewMenu(e.currentTarget);
   mountUploader();
@@ -1751,9 +1747,7 @@ function viewSettings() {
       ${a.id !== state.currentAccountId ? `<button class="btn-2" onclick="switchAcc('${a.id}')">Switch</button>` : ""}
       ${isAdmin ? `<button class="icon-btn danger" title="Remove" onclick="delAcc('${a.id}')">${icon("trash", { size: 16 })}</button>` : ""}
     </div>`);
-  const brandLogoPreview = brand.logo
-    ? `<img class="brand-logo-img" src="${esc(brand.logo)}" alt="" width="40" height="40" />`
-    : `<span class="brand-logo-ph">${brandMark(28)}</span>`;
+  const brandLogoPreview = brandMark(40);
   const brandCard = isAdmin ? `
       <div class="set-card" style="grid-column:1/-1">
         <div class="set-head">${icon("cloud", { size: 16 })} Branding</div>
